@@ -11,7 +11,7 @@ namespace gslx {
 
 using size_t = std::ptrdiff_t;
 
-constexpr auto size_cast(std::size_t size) -> gslx::size_t
+constexpr auto size_cast(std::size_t size) noexcept -> gslx::size_t
 {
     return static_cast<gslx::size_t>(size);
 }
@@ -29,7 +29,7 @@ constexpr auto size(const T& obj) -> gslx::size_t
 }
 
 template <class T, std::size_t N>
-constexpr auto size(const T (&)[N]) -> gslx::size_t
+constexpr auto size(const T (&)[N]) noexcept -> gslx::size_t
 {
     return size_cast(N);
 }
