@@ -1,0 +1,3 @@
+[submodule "Makefile.d"]
+	path = Makefile.d
+	url = /home/pk/proiecte/c++/c++-Makefile.git
