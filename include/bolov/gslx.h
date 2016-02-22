@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <utility>
 
-#include <bolov/stdx/stdx.h>
+#include <bolov/stdx.h>
 
 namespace bolov {
 namespace gslx {
