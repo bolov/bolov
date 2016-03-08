@@ -1,9 +1,13 @@
 #pragma once
 
+#include <cstddef>
 #include <bolov/stdx.h>
 
 namespace bolov {
 namespace tt {
+
+template <class T, std::size_t N>
+using c_array_t = T[N];
 
 template <class T, class A1, class... Args>
 constexpr auto is_one_of = stdx::is_same_v<T, A1> || is_one_of<T, Args...>;
