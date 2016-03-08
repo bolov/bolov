@@ -50,5 +50,20 @@ auto as_basic_string_span(Args&&... args)
     return span_to_basic_string_span(gsl::as_span(std::forward<Args>(args)...));
 }
 
+template <class CharT, gslx::size_t N>
+auto as_basic_string_span(tt::c_array_t<CharT, N>& arr) -> gsl::basic_string_span<CharT, N - 1>
+{
+    Expects(N > 0 && arr[N - 1] == '\0');
+    return arr;
+}
+
+template <class Char_ptr_t>
+auto as_basic_string_span(Char_ptr_t ptr)
+    -> std::enable_if_t<stdx::is_pointer_v<Char_ptr_t>,
+                        gsl::basic_string_span<std::remove_pointer_t<Char_ptr_t>>>
+{
+    Expects(ptr != nullptr);
+    return {ptr, std::strlen(ptr)};
+}
 }
 }
