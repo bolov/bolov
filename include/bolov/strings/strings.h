@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 #include <iterator>
+#include <algorithm>
 
 #include <gsl.h>
 
@@ -64,6 +65,41 @@ template <class T, class F = decltype(detail::is_space)>
 auto split(T&& str, F is_delim = detail::is_space)
 {
     return split(gslx::as_basic_string_span(std::forward<T>(str)), is_delim);
+}
+
+template <class CharT, gslx::size_t N, class F>
+auto get_trimmed_head(gsl::basic_string_span<CharT, N> str, F pred) -> gsl::basic_string_span<CharT>
+{
+    const auto head = std::find_if_not(std::begin(str), std::end(str), pred);
+    if (head == std::end(str))
+        return str;
+    return str.last(std::distance(head, std::end(str)));
+}
+template <class CharT, gslx::size_t N, class F>
+auto get_trimmed_tail(gsl::basic_string_span<CharT, N> str, F pred) -> gsl::basic_string_span<CharT>
+{
+    const auto rtail = std::find_if_not(std::rbegin(str), std::rend(str), pred);
+    if (rtail == std::rend(str))
+        return str;
+    const auto tail = rtail.base();
+    return str.first(std::distance(std::begin(str), tail));
+}
+
+template <class T, class F = decltype(detail::is_space)>
+auto get_trimmed_head(T&& str, F is_delim = detail::is_space)
+{
+    return get_trimmed_head(gslx::as_basic_string_span(std::forward<T>(str)), is_delim);
+}
+template <class T, class F = decltype(detail::is_space)>
+auto get_trimmed_tail(T&& str, F is_delim = detail::is_space)
+{
+    return get_trimmed_tail(gslx::as_basic_string_span(std::forward<T>(str)), is_delim);
+}
+
+template <class T, class F = decltype(detail::is_space)>
+auto get_trimmed(T&& str, F is_delim = detail::is_space)
+{
+    return get_trimmed_head(get_trimmed_tail(std::forward<T>(str), is_delim));
 }
 
 }
