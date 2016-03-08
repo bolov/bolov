@@ -86,20 +86,20 @@ auto get_trimmed_tail(gsl::basic_string_span<CharT, N> str, F pred) -> gsl::basi
 }
 
 template <class T, class F = decltype(detail::is_space)>
-auto get_trimmed_head(T&& str, F is_delim = detail::is_space)
+auto get_trimmed_head(T&& str, F pred = detail::is_space)
 {
-    return get_trimmed_head(gslx::as_basic_string_span(std::forward<T>(str)), is_delim);
+    return get_trimmed_head(gslx::as_basic_string_span(std::forward<T>(str)), pred);
 }
 template <class T, class F = decltype(detail::is_space)>
-auto get_trimmed_tail(T&& str, F is_delim = detail::is_space)
+auto get_trimmed_tail(T&& str, F pred = detail::is_space)
 {
-    return get_trimmed_tail(gslx::as_basic_string_span(std::forward<T>(str)), is_delim);
+    return get_trimmed_tail(gslx::as_basic_string_span(std::forward<T>(str)), pred);
 }
 
 template <class T, class F = decltype(detail::is_space)>
-auto get_trimmed(T&& str, F is_delim = detail::is_space)
+auto get_trimmed(T&& str, F pred = detail::is_space)
 {
-    return get_trimmed_head(get_trimmed_tail(std::forward<T>(str), is_delim));
+    return get_trimmed_head(get_trimmed_tail(std::forward<T>(str), pred));
 }
 
 }
