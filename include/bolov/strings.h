@@ -6,6 +6,7 @@
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <functional>
 
 #include <gsl.h>
 
@@ -99,8 +100,33 @@ auto get_trimmed_tail(T&& str, F pred = detail::is_space)
 template <class T, class F = decltype(detail::is_space)>
 auto get_trimmed(T&& str, F pred = detail::is_space)
 {
-    return get_trimmed_head(get_trimmed_tail(std::forward<T>(str), pred));
+    return get_trimmed_head(get_trimmed_tail(std::forward<T>(str), pred), pred);
 }
 
+
+template <class Char_t>
+auto trim(std::basic_string<Char_t>& str, gsl::basic_string_span<Char_t> trimmed) -> void
+{
+    Expects(gslx::is_included_in(trimmed, {str}));
+
+    std::copy(stdx::begin_ptr(trimmed), stdx::end_ptr(trimmed), stdx::begin_ptr(str));
+
+    str.erase(0 + trimmed.size());
+}
+template <class Char_t, class F = decltype(detail::is_space)>
+auto trim_head(std::basic_string<Char_t>& str, F pred = detail::is_space) -> void
+{
+    trim(str, get_trimmed_head(str, pred));
+}
+template <class Char_t, class F = decltype(detail::is_space)>
+auto trim_tail(std::basic_string<Char_t>& str, F pred = detail::is_space) -> void
+{
+    trim(str, get_trimmed_tail(str, pred));
+}
+template <class Char_t, class F = decltype(detail::is_space)>
+auto trim(std::basic_string<Char_t>& str, F pred = detail::is_space) -> void
+{
+    trim(str, get_trimmed(str, pred));
+}
 }
 }

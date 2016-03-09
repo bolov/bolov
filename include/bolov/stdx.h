@@ -1,10 +1,15 @@
 #pragma once
 
+#include <cstddef>
+#include <utility>
+#include <string>
+#include <initializer_list>
 #include <type_traits>
 
 namespace bolov {
 namespace stdx {
 
+// --- void_t
 namespace detail {
 template <typename... Ts>
 struct make_void {
@@ -13,6 +18,8 @@ struct make_void {
 }
 template <typename... Ts>
 using void_t = typename detail::make_void<Ts...>::type;
+
+// ---- _v templated variables
 
 template <class T>
 constexpr bool is_void_v = std::is_void<T>::value;
@@ -151,5 +158,71 @@ template <class Base, class Derived>
 constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
 template <class From, class To>
 constexpr bool is_convertible_v = std::is_convertible<From, To>::value;
+
+// --- type traits
+
+template <class T, class A1, class... Args>
+constexpr auto is_one_of = stdx::is_same_v<T, A1> || is_one_of<T, Args...>;
+
+template <class T, class A1>
+constexpr auto is_one_of<T, A1> = is_same_v<T, A1>;
+
+template <class T>
+using remove_cv_reference_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
+template <class T>
+constexpr auto is_char = is_one_of<remove_cv_reference_t<T>, char, unsigned char, signed char,
+                                   wchar_t, unsigned wchar_t, signed wchar_t, char16_t, char32_t>;
+// --- c_array_t
+
+template <class T, std::size_t N>
+using c_array_t = T[N];
+
+// --- size()
+
+template <class C>
+constexpr auto size(const C& c) -> decltype(c.size())
+{
+    return c.size();
+}
+template <class T, std::size_t N>
+constexpr std::size_t size(c_array_t<const T,N>&) noexcept
+{
+    return N;
+}
+
+// -- data()
+template <class C>
+constexpr auto data(C& c)
+{
+    return c.data();
+}
+template <class C>
+constexpr auto data(const C& c)
+{
+    return c.data();
+}
+template <class T, std::size_t N>
+constexpr T* data(T (&array)[N]) noexcept
+{
+    return array;
+}
+template <class E>
+constexpr const E* data(std::initializer_list<E> il) noexcept
+{
+    return il.begin();
+}
+template <class Char_t, class Traits, class Allocator>
+constexpr auto data(std::basic_string<Char_t, Traits, Allocator>& str)
+{
+    return &*str.begin();
+}
+
+// --- begin, end ptr
+
+template <class C> auto begin_ptr(const C& c) { return data(c); }
+template <class C> auto begin_ptr(C& c)       { return data(c); }
+template <class C> auto end_ptr(const C& c)   { return data(c) + size(c); }
+template <class C> auto end_ptr(C& c)         { return data(c) + size(c); }
 }
 }
