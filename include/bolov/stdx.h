@@ -182,6 +182,14 @@ using remove_cv_reference_t = std::remove_cv_t<std::remove_reference_t<T>>;
 template <class T>
 constexpr auto is_char = is_one_of<remove_cv_reference_t<T>, char, unsigned char, signed char,
                                    wchar_t, unsigned wchar_t, signed wchar_t, char16_t, char32_t>;
+// --- char traits
+
+template <class Char_t>
+auto char_traits_length(Char_t *ptr) -> std::size_t
+{
+    return std::char_traits<Char_t>::length(ptr);
+}
+
 // --- c_array_t
 
 template <class T, std::size_t N>

@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+
 #include <utility>
 
 #include <gsl.h>
@@ -34,16 +35,20 @@ constexpr auto size(const T& obj) -> gslx::size_t
 
 // --- as_basic_string_span
 
-template <class CharT, gslx::size_t N>
-auto span_to_basic_string_span(gsl::span<CharT, N> s) -> gsl::basic_string_span<CharT>
+template <class Char_t, gslx::size_t N>
+auto as_basic_string_span(gsl::basic_string_span<Char_t, N> str)
+    -> gsl::basic_string_span<Char_t, N>
 {
-    return s;
+    return str;
 }
 
-template <class... Args>
-auto as_basic_string_span(Args&&... args)
+template <class Char_ptr_t>
+auto as_basic_string_span(Char_ptr_t ptr)
+    -> std::enable_if_t<stdx::is_pointer_v<Char_ptr_t>,
+                        gsl::basic_string_span<std::remove_pointer_t<Char_ptr_t>>>
 {
-    return span_to_basic_string_span(gsl::as_span(std::forward<Args>(args)...));
+    Expects(ptr != nullptr);
+    return {ptr, gslx::size_cast(stdx::char_traits_length(ptr))};
 }
 
 template <class CharT, gslx::size_t N>
@@ -53,13 +58,37 @@ auto as_basic_string_span(stdx::c_array_t<CharT, N>& arr) -> gsl::basic_string_s
     return arr;
 }
 
-template <class Char_ptr_t>
-auto as_basic_string_span(Char_ptr_t ptr)
-    -> std::enable_if_t<stdx::is_pointer_v<Char_ptr_t>,
-                        gsl::basic_string_span<std::remove_pointer_t<Char_ptr_t>>>
+template <class Char_t, class Traits, class Allocator>
+auto as_basic_string_span(std::basic_string<Char_t, Traits, Allocator>& str)
+    -> gsl::basic_string_span<Char_t>
 {
-    Expects(ptr != nullptr);
-    return {ptr, std::strlen(ptr)};
+    return {const_cast<Char_t*>(str.data()), gslx::size_cast(str.size())};
+}
+
+template <class Char_t, class Traits, class Allocator>
+auto as_basic_string_span(const std::basic_string<Char_t, Traits, Allocator>& str)
+    -> gsl::basic_string_span<const Char_t>
+{
+    return {str.data(), gslx::size_cast(str.size())};
+}
+
+template <class Char_t, class Traits, class Allocator>
+auto as_basic_string_span(std::basic_string<Char_t, Traits, Allocator>&& str) = delete;
+
+// --- as_const_basic_string_span
+
+template <class Char_t, gslx::size_t N>
+auto as_const_basic_string_span(gsl::basic_string_span<Char_t, N> str)
+    -> gsl::basic_string_span<const Char_t, N>
+{
+    return str;
+}
+
+template <class... Args>
+auto as_const_basic_string_span(Args&&... args)
+    -> decltype(as_const_basic_string_span(as_basic_string_span(std::forward<Args>(args)...)))
+{
+    return as_const_basic_string_span(as_basic_string_span(std::forward<Args>(args)...));
 }
 
 // --- is_included_in
