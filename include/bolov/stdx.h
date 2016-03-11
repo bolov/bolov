@@ -9,15 +9,24 @@
 namespace bolov {
 namespace stdx {
 
-// --- void_t
+// --- void_t, First_of
 namespace detail {
-template <typename... Ts>
-struct make_void {
-    typedef void type;
+template <class T, class... Args>
+struct First_of_impl {
+    using First_t = T;
 };
 }
-template <typename... Ts>
-using void_t = typename detail::make_void<Ts...>::type;
+
+/*
+ * Similar to void_t, exept it maps to the first argument, instead of void
+ *
+ * especially useful for SFINAE via function return type
+ */
+template <class... Args>
+using First_of = typename detail::First_of_impl<Args...>::First_t;
+
+template <class... Args>
+using void_t = First_of<void, Args...>;
 
 // ---- _v templated variables
 
