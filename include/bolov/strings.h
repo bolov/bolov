@@ -65,10 +65,11 @@ auto displace(gsl::span<gsl::basic_string_span<CharT, N2>, N1> views)
 }
 
 template <class T>
-auto displace(T&& views)
+auto displace(T&& views) -> decltype(displace(gsl::as_span(std::forward<T>(views))))
 {
     return displace(gsl::as_span(std::forward<T>(views)));
 }
+
 namespace detail {
 auto is_space(char c) { return std::isspace(c); }
 }
