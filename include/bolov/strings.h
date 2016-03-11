@@ -15,6 +15,44 @@
 namespace bolov {
 namespace str {
 
+template <class Char_t, gslx::size_t N>
+auto contains(gsl::basic_string_span<const Char_t, N> str, Char_t ch) -> bool
+{
+    return std::find(stdx::begin_ptr(str), stdx::end_ptr(str), ch) != stdx::end_ptr(str);
+}
+
+namespace detail {
+template <class T>
+using As_basic_string_span_char_t =
+    typename decltype(gslx::as_basic_string_span(std::declval<T>()))::value_type;
+
+template <class T>
+using As_span_value_t = typename decltype(gsl::as_span(std::declval<T>()))::value_type;
+}
+
+template <class T>
+auto contains(T&& str, detail::As_basic_string_span_char_t<T&&> ch) -> bool
+{
+    return contains(gslx::as_const_basic_string_span(std::forward<T>(str)), ch);
+}
+
+template <class Char_t, gslx::size_t N1, gslx::size_t N2>
+auto contains(gsl::basic_string_span<const Char_t, N1> str,
+              gsl::basic_string_span<const Char_t, N2> searched_str) -> bool
+{
+    return std::search(stdx::begin_ptr(str), stdx::end_ptr(str), stdx::begin_ptr(searched_str),
+                       stdx::end_ptr(searched_str)) != stdx::end_ptr(str);
+}
+
+template <class T1, class T2>
+auto contains(T1&& str, T2&& searched_str)
+    -> stdx::First_of<bool, decltype(gslx::as_const_basic_string_span(std::forward<T1>(str))),
+                      decltype(gslx::as_const_basic_string_span(std::forward<T2>(searched_str)))>
+{
+    return contains(gslx::as_const_basic_string_span(std::forward<T1>(str)),
+                    gslx::as_const_basic_string_span(std::forward<T2>(searched_str)));
+}
+
 template <class CharT, gslx::size_t N1, gslx::size_t N2>
 auto displace(gsl::span<gsl::basic_string_span<CharT, N2>, N1> views)
     -> std::vector<std::basic_string<std::remove_const_t<CharT>>>
