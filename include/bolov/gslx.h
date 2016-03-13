@@ -55,7 +55,7 @@ template <class CharT, gslx::size_t N>
 auto as_basic_string_span(stdx::c_array_t<CharT, N>& arr) -> gsl::basic_string_span<CharT, N - 1>
 {
     Expects(N > 0 && arr[N - 1] == '\0');
-    return arr;
+    return {arr};
 }
 
 template <class Char_t, class Traits, class Allocator>
