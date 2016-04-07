@@ -171,17 +171,33 @@ constexpr bool is_convertible_v = std::is_convertible<From, To>::value;
 // --- type traits
 
 template <class T, class A1, class... Args>
-constexpr auto is_one_of = stdx::is_same_v<T, A1> || is_one_of<T, Args...>;
+constexpr auto Is_one_of = stdx::is_same_v<T, A1> || Is_one_of<T, Args...>;
 
 template <class T, class A1>
-constexpr auto is_one_of<T, A1> = is_same_v<T, A1>;
+constexpr auto Is_one_of<T, A1> = is_same_v<T, A1>;
 
 template <class T>
-using remove_cv_reference_t = std::remove_cv_t<std::remove_reference_t<T>>;
+using Remove_cv_reference_t = std::remove_cv_t<std::remove_reference_t<T>>;
 
 template <class T>
-constexpr auto is_char = is_one_of<remove_cv_reference_t<T>, char, unsigned char, signed char,
+constexpr auto Is_char = Is_one_of<Remove_cv_reference_t<T>, char, unsigned char, signed char,
                                    wchar_t, unsigned wchar_t, signed wchar_t, char16_t, char32_t>;
+
+namespace detail {
+
+template <class T>
+struct Is_tuple_impl : std::false_type {};
+
+template <class... Args>
+struct Is_tuple_impl<std::tuple<Args...>> : std::true_type {};
+}
+
+template <class T>
+constexpr bool Is_tuple = detail::Is_tuple_impl<std::remove_cv<T>>::value;
+
+template <class Tuple_t, std::size_t Idx>
+using Tuple_get_t = std::remove_reference_t<decltype(std::get<Idx>(std::declval<Tuple_t>()))>;
+
 // --- char traits
 
 template <class Char_t>
