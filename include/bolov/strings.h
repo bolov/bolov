@@ -7,26 +7,26 @@
 #include <iterator>
 #include <algorithm>
 #include <functional>
+#include <stdexcept>
 
 #include <gsl.h>
 
 #include <bolov/gslx.h>
+#include <bolov/rtti/type_info.h>
 
 namespace bolov {
 namespace str {
 
 namespace detail {
 template <class T>
-using As_basic_string_span_char_t =
-    typename decltype(gslx::as_basic_string_span(std::declval<T>()))::value_type;
+using Char_t = typename decltype(gslx::as_basic_string_span(std::declval<T>()))::value_type;
 
 template <class T>
-using As_span_value_t = typename decltype(gsl::as_span(std::declval<T>()))::value_type;
+using Value_t = typename decltype(gsl::as_span(std::declval<T>()))::value_type;
 }
 
 template <class String_span_t>
-auto contains(const String_span_t& str,
-              detail::As_basic_string_span_char_t<const String_span_t&> ch)
+auto contains(const String_span_t& str, detail::Char_t<const String_span_t&> ch)
     -> stdx::First_of<bool, decltype(gslx::as_const_basic_string_span(str))>
 {
     auto span = gslx::as_const_basic_string_span(str);
@@ -35,10 +35,8 @@ auto contains(const String_span_t& str,
 
 template <class String_span_t1, class String_span_t2>
 auto contains(const String_span_t1& str, const String_span_t2& searched_str)
-    -> stdx::First_of<
-          bool,
-          decltype(std::declval<detail::As_basic_string_span_char_t<const String_span_t1&>>() ==
-                   std::declval<detail::As_basic_string_span_char_t<const String_span_t2&>>())>
+    -> stdx::First_of<bool, decltype(std::declval<detail::Char_t<const String_span_t1&>>() ==
+                                     std::declval<detail::Char_t<const String_span_t2&>>())>
 {
     const auto span = gslx::as_const_basic_string_span(str);
     const auto searched_span = gslx::as_const_basic_string_span(searched_str);
@@ -46,8 +44,8 @@ auto contains(const String_span_t1& str, const String_span_t2& searched_str)
                        stdx::end_ptr(searched_span)) != stdx::end_ptr(span);
 }
 
-template <class Span_of_string_span_t, class Char_t = detail::As_basic_string_span_char_t<
-                                           detail::As_span_value_t<const Span_of_string_span_t&>>>
+template <class Span_of_string_span_t,
+          class Char_t = detail::Char_t<detail::Value_t<const Span_of_string_span_t&>>>
 auto displace(const Span_of_string_span_t& container)
     -> std::vector<std::basic_string<std::remove_const_t<Char_t>>>
 {
@@ -65,7 +63,7 @@ auto is_space(char c) { return std::isspace(c); }
 }
 
 template <class String_span_t, class F = decltype(detail::is_space),
-          class Char_t = detail::As_basic_string_span_char_t<String_span_t&&>>
+          class Char_t = detail::Char_t<String_span_t&&>>
 auto get_split(String_span_t&& str, F is_delim = detail::is_space)
     -> stdx::First_of<std::vector<gsl::basic_string_span<Char_t>>,
                       decltype(gslx::as_basic_string_span(std::forward<String_span_t>(str))),
@@ -97,8 +95,8 @@ auto get_split(String_span_t&& str, F is_delim = detail::is_space)
 }
 
 template <class String_span_t, class Delim_string_span_t,
-          class Char_t = detail::As_basic_string_span_char_t<const String_span_t&>,
-          class Delim_char_t = detail::As_basic_string_span_char_t<const Delim_string_span_t&>>
+          class Char_t = detail::Char_t<const String_span_t&>,
+          class Delim_char_t = detail::Char_t<const Delim_string_span_t&>>
 auto get_split(const String_span_t& str, const Delim_string_span_t& delims)
     -> stdx::First_of<std::vector<gsl::basic_string_span<Char_t>>,
                       decltype(contains(delims, std::declval<Char_t>()))>
@@ -108,7 +106,7 @@ auto get_split(const String_span_t& str, const Delim_string_span_t& delims)
 }
 
 template <class String_span_t, class F = decltype(detail::is_space),
-          class Char_t = detail::As_basic_string_span_char_t<String_span_t&&>>
+          class Char_t = detail::Char_t<String_span_t&&>>
 auto get_trimmed_head(String_span_t&& str, F pred = detail::is_space)
     -> stdx::First_of<gsl::basic_string_span<Char_t>,
                       decltype(std::declval<bool&>() = pred(std::declval<Char_t>()))>
@@ -122,7 +120,7 @@ auto get_trimmed_head(String_span_t&& str, F pred = detail::is_space)
 }
 
 template <class String_span_t, class F = decltype(detail::is_space),
-          class Char_t = detail::As_basic_string_span_char_t<String_span_t&&>>
+          class Char_t = detail::Char_t<String_span_t&&>>
 auto get_trimmed_tail(String_span_t&& str, F pred = detail::is_space)
     -> stdx::First_of<gsl::basic_string_span<Char_t>,
                       decltype(std::declval<bool&>() = pred(std::declval<Char_t>()))>
@@ -137,7 +135,7 @@ auto get_trimmed_tail(String_span_t&& str, F pred = detail::is_space)
 }
 
 template <class String_span_t, class F = decltype(detail::is_space),
-          class Char_t = detail::As_basic_string_span_char_t<String_span_t&&>>
+          class Char_t = detail::Char_t<String_span_t&&>>
 auto get_trimmed(String_span_t&& str, F pred = detail::is_space)
     -> stdx::First_of<gsl::basic_string_span<Char_t>,
                       decltype(std::declval<bool&>() = pred(std::declval<Char_t>()))>
